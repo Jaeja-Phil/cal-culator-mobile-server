@@ -1,7 +1,7 @@
 ---
 name: Custom issue template
-about: "[component name] add/fix/remove feature"
-title: ''
+about: create issue card
+title: "[feature] add/fix/remove description"
 labels: ''
 assignees: ''
 
