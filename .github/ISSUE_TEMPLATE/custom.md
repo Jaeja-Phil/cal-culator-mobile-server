@@ -8,8 +8,13 @@ assignees: ''
 ---
 
 ### Job Description:
-- 
+
+- [ ] job name
+
 ### Todo:
--
+
+- [ ] todo name
+
 ### Estimated:
--
+
+- [ ] 1~3 hrs
