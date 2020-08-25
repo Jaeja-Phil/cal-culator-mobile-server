@@ -1,19 +1,18 @@
-'use strict';
-
-const pkg = require('./package.json');
-
 module.exports = {
+	env: {
+		es2020: true,
+		es6: true,
+		node: true,
+	},
 	extends: ['prettier'],
-	plugins: ['prettier'],
+	parserOptions: {
+		ecmaVersion: 2017,
+		sourceType: 'module',
+	},
 	rules: {
 		'prettier/prettier': 'error',
 		'no-unused-vars': 'warn',
 		'no-console': 'off',
 	},
-	parserOptions: {
-		ecmaVersion: 2017,
-	},
-	env: {
-		es6: true,
-	},
+	plugins: ['prettier'],
 };

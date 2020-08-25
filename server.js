@@ -1,20 +1,34 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
+import express from 'express';
+import mongoose from 'mongoose';
+import { ApolloServer } from 'apollo-server-express';
+import { resolvers } from './mongoDB/resolvers';
+import { typeDefs } from './mongoDB/typeDefs';
+import consola from 'consola';
 
-const PORT = 4000;
-const app = express();
+const server = async () => {
+	const app = express();
+	const server = new ApolloServer({
+		typeDefs,
+		resolvers,
+	});
 
-app.use(helmet());
-app.use(cors());
+	server.applyMiddleware({ app });
+	try {
+		await mongoose.connect(
+			'mongodb+srv://admin:0123456789@ec532.zal7d.mongodb.net/Cal-Culator?retryWrites=true&w=majority',
+			{ useNewUrlParser: true, useUnifiedTopology: true },
+		);
+	} catch (err) {
+		consola.error({ message: err, badge: true });
+	}
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+	app.get('/', (req, res) => res.send('Hello World'));
+	app.listen(4001, () =>
+		consola.success({
+			message: `Cal-Culator Server listening at http://localhost:${4001}`,
+			badge: true,
+		}),
+	);
+};
 
-app.get('/', (req, res) => res.status(200).send('OK'));
-
-app.listen(PORT, () =>
-	console.log(`Cal-Culator-Mobile Server app listening at http://localhost:${PORT}`),
-);
-
-module.exports = app;
+server();
