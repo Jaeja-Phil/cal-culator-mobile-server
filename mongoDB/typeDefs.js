@@ -36,7 +36,7 @@ export const typeDefs = gql`
 
 	type FoodUser {
 		id: ID!
-		amout: Int!
+		amount: Int!
 		date: String!
 		user_id: Int!
 		food_id: Int!
@@ -60,6 +60,6 @@ export const typeDefs = gql`
 			vitamin_b: Float
 			vitamin_c: Float
 		): Food!
-		createFoodUser(amout: Int!, date: String!, user_id: Int!, food_id: Int!): FoodUser
+		createFoodUser(amount: Int!, date: String!, user_id: Int!, food_id: Int!): FoodUser
 	}
 `;

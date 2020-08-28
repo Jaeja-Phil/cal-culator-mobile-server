@@ -27,8 +27,8 @@ export const Food = mongoose.model('Food', {
 });
 
 export const FoodUser = mongoose.model('FoodUser', {
-	amout: Number,
-	time: String,
+	amount: Number,
+	date: String,
 	user_id: Number,
 	food_id: Number,
 	created_At: Date,
