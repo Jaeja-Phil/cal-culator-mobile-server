@@ -13,8 +13,8 @@ export const resolvers = {
 			await newUser.save();
 			return newUser;
 		},
-		createFoodUser: async (_, { amout, date, user_id, food_id, created_At }) => {
-			const newFoodUser = new FoodUser({ amout, date, user_id, food_id, created_At });
+		createFoodUser: async (_, { amount, date, user_id, food_id, created_At }) => {
+			const newFoodUser = new FoodUser({ amount, date, user_id, food_id, created_At });
 			await newFoodUser.save();
 			return newFoodUser;
 		},
