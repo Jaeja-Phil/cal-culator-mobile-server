@@ -3,9 +3,9 @@ const Schema = mongoose.Schema;
 
 const FoodUsersSchema = new Schema({
 	amount: Number,
-	date: String,
-	user_id: Number,
-	food_id: Number,
+	date: Date,
+	user_id: String,
+	food_id: String,
 });
 
 module.exports = mongoose.model('FoodUsers', FoodUsersSchema);
