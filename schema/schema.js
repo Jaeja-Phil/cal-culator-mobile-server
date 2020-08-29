@@ -1,5 +1,6 @@
 const graphql = require('graphql');
 const { Foods, FoodUsers, Users } = require('../models');
+const { getLastDayOfMonth, getMondayOfNthWeek } = require('./helperFunctions');
 
 const {
 	GraphQLObjectType,
@@ -66,6 +67,12 @@ const FoodUserType = new GraphQLObjectType({
 		amount: { type: GraphQLInt },
 		user_id: { type: GraphQLID },
 		food_id: { type: GraphQLID },
+		foods: {
+			type: FoodType,
+			resolve(parent) {
+				return Foods.findById(parent.food_id);
+			},
+		},
 	}),
 });
 
@@ -88,6 +95,37 @@ const RootQuery = new GraphQLObjectType({
 			type: new GraphQLList(FoodUserType),
 			resolve() {
 				return FoodUsers.find({});
+			},
+		},
+		foodusersDaily: {
+			type: new GraphQLList(FoodUserType),
+			args: {
+				user_id: { type: GraphQLID },
+				date: { type: DateType },
+				dwm: { type: GraphQLString },
+			},
+			resolve(_, { user_id, date, dwm }) {
+				if (dwm === 'daily') {
+					return FoodUsers.find({ user_id, date });
+				} else if (dwm === 'weekly') {
+					const [startDate, endDate] = getMondayOfNthWeek(date);
+					return FoodUsers.find({
+						user_id,
+						date: {
+							$gte: startDate,
+							$lt: endDate,
+						},
+					});
+				} else {
+					const lastDayOfMonth = getLastDayOfMonth(date);
+					return FoodUsers.find({
+						user_id,
+						date: {
+							$gte: `${date}-01`,
+							$lte: `${date}-${lastDayOfMonth}`,
+						},
+					});
+				}
 			},
 		},
 	},
