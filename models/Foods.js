@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const FoodsSchema = new Schema({
 	name: String,
-	calorie: Number,
+	calories: Number,
 	fat: Number,
 	carbohydrate: Number,
 	sugar: Number,
