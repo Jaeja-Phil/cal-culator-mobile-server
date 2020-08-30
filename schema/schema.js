@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const { Foods, FoodUsers, Users } = require('../models');
 const { getLastDayOfMonth, getMondayOfNthWeek } = require('./helperFunctions');
+const addFoodToDB = require('../api_getter/food_info');
 
 const {
 	GraphQLObjectType,
@@ -42,6 +43,7 @@ const FoodType = new GraphQLObjectType({
 	name: 'Foods',
 	fields: () => ({
 		id: { type: GraphQLID },
+		image: { type: GraphQLString },
 		name: { type: GraphQLString },
 		calories: { type: GraphQLFloat },
 		fat: { type: GraphQLFloat },
@@ -54,8 +56,7 @@ const FoodType = new GraphQLObjectType({
 		calcium: { type: GraphQLFloat },
 		zinc: { type: GraphQLFloat },
 		vitamin_a: { type: GraphQLFloat },
-		vitamin_b: { type: GraphQLFloat },
-		vitamin_c: { type: GraphQLFloat },
+		vitamin_d: { type: GraphQLFloat },
 	}),
 });
 
@@ -87,8 +88,18 @@ const RootQuery = new GraphQLObjectType({
 		},
 		foods: {
 			type: new GraphQLList(FoodType),
-			resolve() {
-				return Foods.find({});
+			args: {
+				name: { type: GraphQLString },
+			},
+			async resolve(_, args) {
+				let result = await Foods.find({ name: args.name });
+				if (result.length === 0) {
+					let newFood = await addFoodToDB(args.name);
+					await new Foods(newFood).save();
+					return Foods.find({ name: args.name });
+				} else {
+					return Foods.find({});
+				}
 			},
 		},
 		foodusers: {
@@ -162,8 +173,7 @@ const Mutation = new GraphQLObjectType({
 				calcium: { type: new GraphQLNonNull(GraphQLFloat) },
 				zinc: { type: new GraphQLNonNull(GraphQLFloat) },
 				vitamin_a: { type: new GraphQLNonNull(GraphQLFloat) },
-				vitamin_b: { type: new GraphQLNonNull(GraphQLFloat) },
-				vitamin_c: { type: new GraphQLNonNull(GraphQLFloat) },
+				vitamin_d: { type: new GraphQLNonNull(GraphQLFloat) },
 			},
 			resolve(_, args) {
 				return new Foods(args).save();
