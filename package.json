@@ -12,6 +12,7 @@
 		"@babel/cli": "^7.10.5",
 		"@babel/preset-env": "^7.11.0",
 		"apollo-server-express": "^2.16.1",
+		"axios": "^0.20.0",
 		"bcryptjs": "^2.4.3",
 		"consola": "^2.15.0",
 		"cors": "^2.8.5",
