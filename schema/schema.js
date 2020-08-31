@@ -13,6 +13,7 @@ const {
 	GraphQLNonNull,
 	GraphQLList,
 	GraphQLScalarType,
+	GraphQLInputObjectType,
 } = graphql;
 
 const DateType = new GraphQLScalarType({
@@ -25,6 +26,16 @@ const DateType = new GraphQLScalarType({
 		}
 		return date;
 	},
+});
+
+const FoodUserInput = new GraphQLInputObjectType({
+	name: 'FooduserInput',
+	fields: () => ({
+		date: { type: new GraphQLNonNull(DateType) },
+		amount: { type: new GraphQLNonNull(GraphQLInt) },
+		user_id: { type: new GraphQLNonNull(GraphQLID) },
+		food_id: { type: new GraphQLNonNull(GraphQLID) },
+	}),
 });
 
 const UserType = new GraphQLObjectType({
@@ -87,7 +98,7 @@ const RootQuery = new GraphQLObjectType({
 			},
 		},
 		foods: {
-			type: new GraphQLList(FoodType),
+			type: FoodType,
 			args: {
 				name: { type: GraphQLString },
 			},
@@ -95,10 +106,9 @@ const RootQuery = new GraphQLObjectType({
 				let result = await Foods.find({ name: args.name });
 				if (result.length === 0) {
 					let newFood = await addFoodToDB(args.name);
-					await new Foods(newFood).save();
-					return Foods.find({ name: args.name });
+					return new Foods(newFood).save();
 				} else {
-					return Foods.find({});
+					return result[0];
 				}
 			},
 		},
@@ -108,7 +118,7 @@ const RootQuery = new GraphQLObjectType({
 				return FoodUsers.find({});
 			},
 		},
-		foodusersDaily: {
+		foodusersDate: {
 			type: new GraphQLList(FoodUserType),
 			args: {
 				user_id: { type: GraphQLID },
@@ -182,13 +192,11 @@ const Mutation = new GraphQLObjectType({
 		addFoodUser: {
 			type: FoodUserType,
 			args: {
-				date: { type: new GraphQLNonNull(DateType) },
-				amount: { type: new GraphQLNonNull(GraphQLInt) },
-				user_id: { type: new GraphQLNonNull(GraphQLID) },
-				food_id: { type: new GraphQLNonNull(GraphQLID) },
+				list: { type: new GraphQLList(FoodUserInput) },
 			},
 			resolve(_, args) {
-				return new FoodUsers(args).save();
+				FoodUsers.insertMany(args.list);
+				return;
 			},
 		},
 	},
