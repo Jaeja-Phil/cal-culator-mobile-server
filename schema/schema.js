@@ -1,7 +1,9 @@
 const graphql = require('graphql');
+const bcrypt = require('bcryptjs');
 const { Foods, FoodUsers, Users } = require('../models');
 const { getLastDayOfMonth, getMondayOfNthWeek } = require('./helperFunctions');
 const addFoodToDB = require('../api_getter/food_info');
+const { deleteOne } = require('../models/Foods');
 
 const {
 	GraphQLObjectType,
@@ -155,6 +157,28 @@ const RootQuery = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
 	name: 'Mutation',
 	fields: {
+		login: {
+			type: UserType,
+			args: {
+				password: { type: new GraphQLNonNull(GraphQLString) },
+				email: { type: new GraphQLNonNull(GraphQLString) },
+			},
+			async resolve(_, args) {
+				const { email, password } = args;
+				let user = await Users.findOne({ email });
+
+				if (!user) {
+					return false;
+				} else {
+					if (bcrypt.compareSync(password, user.password)) {
+						console.log(user.password);
+						return user;
+					} else {
+						return false;
+					}
+				}
+			},
+		},
 		addUser: {
 			type: UserType,
 			args: {
@@ -164,8 +188,24 @@ const Mutation = new GraphQLObjectType({
 				gender: { type: new GraphQLNonNull(GraphQLString) },
 				age: { type: new GraphQLNonNull(GraphQLInt) },
 			},
-			resolve(_, args) {
-				return new Users(args).save();
+			async resolve(_, args) {
+				const { name, password, email, gender, age } = args;
+
+				let user = await Users.findOne({ email });
+				if (user) {
+					return false;
+				} else {
+					await bcrypt.hash(password, 10, function (err, passwordHash) {
+						const newUser = {
+							name,
+							password: passwordHash,
+							email,
+							gender,
+							age,
+						};
+						return Users(newUser).save();
+					});
+				}
 			},
 		},
 		addFood: {
