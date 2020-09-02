@@ -203,7 +203,7 @@ const Mutation = new GraphQLObjectType({
 							gender,
 							age,
 						};
-						return Users(newUser).save();
+						Users(newUser).save();
 					});
 				}
 			},
