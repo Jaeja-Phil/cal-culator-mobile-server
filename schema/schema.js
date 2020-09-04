@@ -128,13 +128,13 @@ const RootQuery = new GraphQLObjectType({
 			resolve(_, { user_id, date, dwm }) {
 				if (dwm === 'daily') {
 					return FoodUsers.find({ user_id, date });
-				} else if (dwm === 'weekly') {
-					const [startDate, endDate] = getMondayOfNthWeek(date);
+				} else if (dwm === 'range') {
+					const [startDate, endDate] = date.split(' ');
 					return FoodUsers.find({
 						user_id,
 						date: {
 							$gte: startDate,
-							$lt: endDate,
+							$lte: endDate,
 						},
 					});
 				} else {
