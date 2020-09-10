@@ -99,6 +99,17 @@ const RootQuery = new GraphQLObjectType({
 				return Users.find({});
 			},
 		},
+		user: {
+			type: UserType,
+			resolve(_, { req }) {
+				const { userId } = req.session;
+				if (!req.session.userId) {
+					console.log('REQUIRED LOGIN');
+				} else {
+					return Users.findById({ userId });
+				}
+			},
+		},
 		foods: {
 			type: FoodType,
 			args: {
@@ -163,15 +174,15 @@ const Mutation = new GraphQLObjectType({
 				password: { type: new GraphQLNonNull(GraphQLString) },
 				email: { type: new GraphQLNonNull(GraphQLString) },
 			},
-			async resolve(_, args) {
+			async resolve(_, args, { req }) {
 				const { email, password } = args;
 				let user = await Users.findOne({ email });
-
 				if (!user) {
 					return false;
 				} else {
 					if (bcrypt.compareSync(password, user.password)) {
-						console.log(user.password);
+						req.session.userId = user.id;
+						console.log('LOGIN SUCCESS');
 						return user;
 					} else {
 						return false;
@@ -185,27 +196,43 @@ const Mutation = new GraphQLObjectType({
 				name: { type: new GraphQLNonNull(GraphQLString) },
 				password: { type: new GraphQLNonNull(GraphQLString) },
 				email: { type: new GraphQLNonNull(GraphQLString) },
-				gender: { type: new GraphQLNonNull(GraphQLString) },
-				age: { type: new GraphQLNonNull(GraphQLInt) },
+				gender: { type: GraphQLString },
+				age: { type: GraphQLInt },
 			},
 			async resolve(_, args) {
 				const { name, password, email, gender, age } = args;
-
 				let user = await Users.findOne({ email });
 				if (user) {
-					return false;
+					return user;
 				} else {
-					await bcrypt.hash(password, 10, function (err, passwordHash) {
-						const newUser = {
-							name,
-							password: passwordHash,
-							email,
-							gender,
-							age,
-						};
-						return Users(newUser).save();
-					});
+					const newUser = new Users({ name, password, email, gender, age });
+					await newUser.save();
+					return newUser;
 				}
+			},
+		},
+		deleteUser: {
+			type: UserType,
+			args: {
+				email: { type: new GraphQLNonNull(GraphQLString) },
+			},
+			async resolve(_, args) {
+				const { email } = args;
+				const user = await Users.findOneAndRemove({ email });
+				return user;
+			},
+		},
+		addUserInfo: {
+			type: UserType,
+			args: {
+				gender: { type: new GraphQLNonNull(GraphQLString) },
+				email: { type: new GraphQLNonNull(GraphQLString) },
+				age: { type: new GraphQLNonNull(GraphQLInt) },
+			},
+			async resolve(_, args) {
+				const { gender, age, email } = args;
+				const user = await Users.findOneAndUpdate({ email }, { gender, age }, { new: true });
+				return user;
 			},
 		},
 		addFood: {
