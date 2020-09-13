@@ -22,7 +22,7 @@ mongoose
 mongoose.connection.on('open', () => console.log('connected to database'));
 
 app.disable('x-powered-by');
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:8081', credentials: true }));
 app.use(
 	session({
 		name: 'user_id',
@@ -39,7 +39,7 @@ app.use(
 	'/graphql',
 	bodyParser.json(),
 	(req, res, next) => {
-		console.log(req.session);
+		// console.log(req.session);
 		return next();
 	},
 	graphqlHTTP((req, res, next) => {
