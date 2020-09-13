@@ -99,14 +99,18 @@ const RootQuery = new GraphQLObjectType({
 				return Users.find({});
 			},
 		},
-		user: {
+		loginedUser: {
 			type: UserType,
-			resolve(_, { req }) {
+			resolve(_, __, { req }) {
 				const { userId } = req.session;
-				if (!req.session.userId) {
+				console.log('enter :', req.session);
+
+				if (!userId) {
+					console.log('false :', req.session);
 					console.log('REQUIRED LOGIN');
 				} else {
-					return Users.findById({ userId });
+					console.log('true :', req.session);
+					return Users.findById(userId);
 				}
 			},
 		},
@@ -182,6 +186,7 @@ const Mutation = new GraphQLObjectType({
 				} else {
 					if (bcrypt.compareSync(password, user.password)) {
 						req.session.userId = user.id;
+						console.log(req.session);
 						console.log('LOGIN SUCCESS');
 						return user;
 					} else {
