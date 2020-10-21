@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const findOrCreate = require('mongoose-findorcreate');
 const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
 
@@ -8,11 +9,13 @@ const UsersSchema = new Schema(
 		password: String,
 		email: String,
 		gender: String,
-		age: Number,
+		age: String,
+		height: Number,
+		weight: Number,
 	},
 	{ timestamps: true },
 );
-
+UsersSchema.plugin(findOrCreate);
 UsersSchema.pre('save', async function (next) {
 	if (this.isModified('password')) {
 		try {

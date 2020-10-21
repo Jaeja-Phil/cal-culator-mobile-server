@@ -48,7 +48,9 @@ const UserType = new GraphQLObjectType({
 		password: { type: GraphQLString },
 		email: { type: GraphQLString },
 		gender: { type: GraphQLString },
-		age: { type: GraphQLInt },
+		age: { type: GraphQLString },
+		height: { type: GraphQLInt },
+		weight: { type: GraphQLInt },
 	}),
 });
 
@@ -97,21 +99,6 @@ const RootQuery = new GraphQLObjectType({
 			type: new GraphQLList(UserType),
 			resolve() {
 				return Users.find({});
-			},
-		},
-		loginedUser: {
-			type: UserType,
-			resolve(_, __, { req }) {
-				const { userId } = req.session;
-				console.log('enter :', req.session);
-
-				if (!userId) {
-					console.log('false :', req.session);
-					console.log('REQUIRED LOGIN');
-				} else {
-					console.log('true :', req.session);
-					return Users.findById(userId);
-				}
 			},
 		},
 		foods: {
@@ -182,16 +169,57 @@ const Mutation = new GraphQLObjectType({
 				const { email, password } = args;
 				let user = await Users.findOne({ email });
 				if (!user) {
+					console.log('USER NOT EXIST');
 					return false;
 				} else {
 					if (bcrypt.compareSync(password, user.password)) {
 						req.session.userId = user.id;
-						console.log(req.session);
 						console.log('LOGIN SUCCESS');
 						return user;
 					} else {
+						console.log('LOGIN FAILED');
 						return false;
 					}
+				}
+			},
+		},
+		logout: {
+			type: UserType,
+			args: {
+				id: { type: new GraphQLNonNull(GraphQLString) },
+			},
+			async resolve(_, args, { req }) {
+				console.log('LOGOUT PROCESS START');
+				const { id } = args;
+				const { userId } = req.session;
+				if (id === userId) {
+					req.session.destroy(err => {
+						if (err) {
+							throw new Error('SESSION ERROR');
+						} else {
+							console.log('SUCCESSFULLY LOGOUT');
+						}
+					});
+				} else {
+					console.log('REQUIRED LOGIN');
+				}
+			},
+		},
+		loginedUser: {
+			type: UserType,
+			args: {
+				id: { type: new GraphQLNonNull(GraphQLString) },
+			},
+			resolve(_, args, { req }) {
+				const { userId } = req.session;
+				const { id } = args;
+
+				if (id !== userId) {
+					console.log('false :', req.session);
+					console.log('USERID NOT MATCHED');
+				} else {
+					console.log('true :', req.session);
+					return Users.findById(id);
 				}
 			},
 		},
@@ -203,6 +231,8 @@ const Mutation = new GraphQLObjectType({
 				email: { type: new GraphQLNonNull(GraphQLString) },
 				gender: { type: GraphQLString },
 				age: { type: GraphQLInt },
+				height: { type: GraphQLInt },
+				weight: { type: GraphQLInt },
 			},
 			async resolve(_, args) {
 				const { name, password, email, gender, age } = args;
