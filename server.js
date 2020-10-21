@@ -8,6 +8,7 @@ const dotenv = require('dotenv');
 const helmet = require('helmet');
 const cors = require('cors');
 const { graphql } = require('graphql');
+const loginRouter = require('./routes/login');
 dotenv.config();
 
 const app = express();
@@ -28,16 +29,19 @@ app.use(
 		name: 'user_id',
 		secret: process.env.SESSION_SECRET,
 		resave: false,
-		saveUninitialized: false,
+		saveUninitialized: true,
 		cookie: {
 			httpOnly: true,
 			maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
 		},
 	}),
 );
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use('/auth', loginRouter);
+app.get('/', (req, res) => res.status(200).send('OK'));
 app.use(
 	'/graphql',
-	bodyParser.json(),
 	(req, res, next) => {
 		// console.log(req.session);
 		return next();
